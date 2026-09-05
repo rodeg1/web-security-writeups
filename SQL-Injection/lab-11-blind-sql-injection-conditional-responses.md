@@ -1,4 +1,4 @@
-# Lab 5 — Blind SQL Injection with Conditional Responses
+# Lab 11 — Blind SQL Injection with Conditional Responses
 
 ## Overview
 
