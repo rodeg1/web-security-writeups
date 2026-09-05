@@ -262,7 +262,7 @@ The key technique was converting the blind SQL injection into a series of **true
 **Lab status: Solved ✅**
 
 
-
+```
 import requests
 import string
 
